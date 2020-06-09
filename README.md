@@ -14,6 +14,7 @@ Simplified MoneyPHP:
  - just decimal format
  - dot as separator
  - same base classes and unit tests
+ - added shortcut for calculating tax
 
 ## Install
 
@@ -27,9 +28,11 @@ $ composer require johnykvsky/jkmoney
 
 Please, look at https://github.com/moneyphp/money for more details - just keep in mind: no currency, only decimal format.
 Remember: Money class is immutable.
+Remember: if you create it from integer, you need to pass value in smallest currency items (ie. cents). 
 
 ``` php
 use JKMoney\Money;
+$money = Money::create('50013'); //amount is 50013, internally '5001300'
 $money1 = Money::create(50013); //amount is 500.13, internally '50013'
 $money2 = Money::create(55.65); //amount is 55.65, internally '5565'
 $money3 = Money::create('15.25'); //amount is 15.25, internally '1525'
@@ -38,9 +41,12 @@ $result = $result->subtract($money3); //amount 540.53
 $result = $result->multiply(2); //amount 1081.06
 $result = $result->divide(3); //amount 360.35
 //getting amount
-echo $result->>getAmount(); // internal '36035'
-echo $result->>getValue(); // internal as integer 36035
-echo $result->>getString(); // for display '360.35'
+echo $result->getAmount(); // internal '36035'
+echo $result->getValue(); // internal as integer 36035
+echo $result->getFormatted(); // for display '360.35', to use in Twig like {{ money.formatted }}
+//calculate tax, 23%
+echo $result->tax(23)->getValue(); // amount 82.88
+echo $result->getValue(); // amount is still 360.35, since Money is immutable
 ```
 
 ## Testing

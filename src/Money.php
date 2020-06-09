@@ -141,7 +141,7 @@ class Money implements \JsonSerializable
         return (int) $this->amount;
     }
 
-    public function getString(): string
+    public function getFormatted(): string
     {
         return Formatter::format($this->amount);
     }
@@ -271,22 +271,22 @@ class Money implements \JsonSerializable
 
     /**
      * @param string $amount
-     * @param int $rounding_mode
+     * @param int $roundingMode
      * @return string
      */
-    private function round($amount, $rounding_mode): string
+    private function round($amount, $roundingMode): string
     {
-        $this->assertRoundingMode($rounding_mode);
+        $this->assertRoundingMode($roundingMode);
 
-        if ($rounding_mode === self::ROUND_UP) {
+        if ($roundingMode === self::ROUND_UP) {
             return $this->calculator->ceil($amount);
         }
 
-        if ($rounding_mode === self::ROUND_DOWN) {
+        if ($roundingMode === self::ROUND_DOWN) {
             return $this->calculator->floor($amount);
         }
 
-        return $this->calculator->round($amount, $rounding_mode);
+        return $this->calculator->round($amount, $roundingMode);
     }
 
     /**
@@ -336,14 +336,84 @@ class Money implements \JsonSerializable
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return array
      */
     public function jsonSerialize(): array
     {
         return [
-            'amount' => $this->amount
+            'amount' => $this->getAmount(),
+            'formatted' => $this->getFormatted()
         ];
+    }
+
+    /**
+     * @param int|float $tax
+     * @param int $roundingMode
+     * @return Money
+     */
+    public function tax($tax, $roundingMode = self::ROUND_HALF_UP): Money
+    {
+        if (!is_numeric($tax) || $tax === 0) {
+            throw new \InvalidArgumentException('Tax must be (non zero) numeric value');
+        }
+
+        $taxValue = $tax / 100;
+        return $this->multiply($taxValue, $roundingMode);
+    }
+
+    /**
+     * @param Money $first
+     * @param Money ...$collection
+     * @return Money
+     */
+    public static function min(self $first, self ...$collection)
+    {
+        $min = $first;
+
+        foreach ($collection as $money) {
+            if ($money->lessThan($min)) {
+                $min = $money;
+            }
+        }
+
+        return $min;
+    }
+
+    /**
+     * @param Money $first
+     * @param Money ...$collection
+     * @return Money
+     */
+    public static function max(self $first, self ...$collection)
+    {
+        $max = $first;
+
+        foreach ($collection as $money) {
+            if ($money->greaterThan($max)) {
+                $max = $money;
+            }
+        }
+
+        return $max;
+    }
+
+    /**
+     * @param Money $first
+     * @param Money ...$collection
+     * @return Money
+     */
+    public static function sum(self $first, self ...$collection)
+    {
+        return $first->add(...$collection);
+    }
+
+    /**
+     * @param Money $first
+     * @param Money ...$collection
+     * @return Money
+     */
+    public static function avg(self $first, self ...$collection)
+    {
+        return $first->add(...$collection)->divide(func_num_args());
     }
 }
