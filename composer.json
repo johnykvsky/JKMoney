@@ -1,0 +1,53 @@
+{
+    "name": "johnykvsky/jkmoney",
+    "type": "library",
+    "description": "Simplified MoneyPhp",
+    "keywords": [
+        "johnykvsky",
+        "JKMoney"
+    ],
+    "homepage": "https://github.com/johnykvsky/JKMoney",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "johnykvsky",
+            "email": "johnykvsky@protonmail.com",
+            "homepage": "https://github.com/johnykvsky",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~8.5.2",
+        "phpstan/phpstan": "~0.12.13",
+        "phpstan/extension-installer": "~1.0.3",
+        "thecodingmachine/phpstan-strict-rules": "~0.12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "JKMoney\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "JKMoney\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "check-style": "phpcs -p --standard=phpcs.xml --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1",
+        "fix-style": "phpcbf -p --standard=phpcs.xml --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1",
+        "phpstan": "vendor/bin/phpstan analyse src --level=0",
+        "phpstan-max": "vendor/bin/phpstan analyse src --level=7"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
