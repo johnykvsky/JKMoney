@@ -3,7 +3,6 @@
 use JKMoney\Formatter;
 use JKMoney\Money;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 
 final class DecimalMoneyFormatterTest extends TestCase
 {

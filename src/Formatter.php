@@ -12,7 +12,7 @@ class Formatter
     {
         $negative = false;
 
-        if ($valueBase[0] === '-') {
+        if (strpos($valueBase, '-') === 0) {
             $negative = true;
             $valueBase = substr($valueBase, 1);
         }
@@ -23,15 +23,15 @@ class Formatter
             $formatted = substr($valueBase, 0, $valueLength - Money::DECIMAL_DIGITS);
             $decimalDigits = substr($valueBase, $valueLength - Money::DECIMAL_DIGITS);
 
-            if (strlen($decimalDigits) > 0) {
-                $formatted .= '.'.$decimalDigits;
+            if ($decimalDigits && $decimalDigits !== '') {
+                $formatted .= '.' . $decimalDigits;
             }
         } else {
-            $formatted = '0.'.str_pad('', Money::DECIMAL_DIGITS - $valueLength, '0').$valueBase;
+            $formatted = '0.' . str_pad('', Money::DECIMAL_DIGITS - $valueLength, '0') . $valueBase;
         }
 
         if ($negative === true) {
-            $formatted = '-'.$formatted;
+            $formatted = '-' . $formatted;
         }
 
         return $formatted;

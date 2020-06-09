@@ -2,7 +2,10 @@
 
 namespace JKMoney;
 
-class Money implements \JsonSerializable
+use InvalidArgumentException;
+use JsonSerializable;
+
+class Money implements JsonSerializable
 {
     const ROUND_HALF_UP = PHP_ROUND_HALF_UP;
     const ROUND_HALF_DOWN = PHP_ROUND_HALF_DOWN;
@@ -23,21 +26,21 @@ class Money implements \JsonSerializable
     private $calculator;
 
     /**
-     * @param int|string $amount   Amount, expressed in the smallest units of currency (eg cents)
-     * @throws \InvalidArgumentException If amount is not integer
+     * @param int|string $amount Amount, expressed in the smallest units of currency (eg cents)
+     * @throws InvalidArgumentException If amount is not integer
      */
     public function __construct($amount)
     {
         if (filter_var($amount, FILTER_VALIDATE_INT) === false) {
-            $numberFromString = Number::fromString((string) $amount);
+            $numberFromString = Number::fromString((string)$amount);
             if (!$numberFromString->isInteger()) {
-                throw new \InvalidArgumentException('Amount must be an integer(ish) value');
+                throw new InvalidArgumentException('Amount must be an integer(ish) value');
             }
 
             $amount = $numberFromString->getIntegerPart();
         }
 
-        $this->amount = (string) $amount;
+        $this->amount = (string)$amount;
         $this->calculator = new BcMathCalculator;
     }
 
@@ -48,32 +51,41 @@ class Money implements \JsonSerializable
     public static function create($number): Money
     {
         if (is_int($number)) {
-            return new self((string) $number);
+            return new self((string)$number);
         }
 
         if (is_float($number) || is_string($number)) {
-             return new self((string) Parser::parse((string) $number));
-        } 
+            return new self(Parser::parse((string)$number));
+        }
 
-        throw new \InvalidArgumentException('Invalid amount type provided');
+        throw new InvalidArgumentException('Invalid amount type provided');
     }
 
     /**
-     * @param int|string $amount
+     * @param Money $first
+     * @param Money ...$collection
      * @return Money
      */
-    private function newInstance($amount): Money
+    public static function min(self $first, self ...$collection)
     {
-        return new self($amount);
+        $min = $first;
+
+        foreach ($collection as $money) {
+            if ($money->lessThan($min)) {
+                $min = $money;
+            }
+        }
+
+        return $min;
     }
 
     /**
      * @param Money $other
      * @return bool
      */
-    public function equals(Money $other): bool
+    public function lessThan(Money $other): bool
     {
-        return $this->amount === $other->amount;
+        return $this->compare($other) < 0;
     }
 
     /**
@@ -90,6 +102,24 @@ class Money implements \JsonSerializable
     }
 
     /**
+     * @param Money $first
+     * @param Money ...$collection
+     * @return Money
+     */
+    public static function max(self $first, self ...$collection)
+    {
+        $max = $first;
+
+        foreach ($collection as $money) {
+            if ($money->greaterThan($max)) {
+                $max = $money;
+            }
+        }
+
+        return $max;
+    }
+
+    /**
      * @param Money $other
      * @return bool
      */
@@ -99,51 +129,13 @@ class Money implements \JsonSerializable
     }
 
     /**
-     * @param Money $other
-     * @return bool
+     * @param Money $first
+     * @param Money ...$collection
+     * @return Money
      */
-    public function greaterThanOrEqual(Money $other): bool
+    public static function sum(self $first, self ...$collection)
     {
-        return $this->compare($other) >= 0;
-    }
-
-    /**
-     * @param Money $other
-     * @return bool
-     */
-    public function lessThan(Money $other): bool
-    {
-        return $this->compare($other) < 0;
-    }
-
-    /**
-     * @param Money $other
-     * @return bool
-     */
-    public function lessThanOrEqual(Money $other): bool
-    {
-        return $this->compare($other) <= 0;
-    }
-
-    /**
-     * @return string
-     */
-    public function getAmount(): string
-    {
-        return $this->amount;
-    }
-
-    /**
-     * @return int
-     */
-    public function getValue(): int
-    {
-        return (int) $this->amount;
-    }
-
-    public function getFormatted(): string
-    {
-        return Formatter::format($this->amount);
+        return $first->add(...$collection);
     }
 
     /**
@@ -161,65 +153,13 @@ class Money implements \JsonSerializable
     }
 
     /**
-     * @param Money[] $subtrahends
+     * @param Money $first
+     * @param Money ...$collection
      * @return Money
      */
-    public function subtract(Money ...$subtrahends): Money
+    public static function avg(self $first, self ...$collection)
     {
-        $amount = $this->amount;
-        foreach ($subtrahends as $subtrahend) {
-            $amount = $this->calculator->subtract($amount, $subtrahend->amount);
-        }
-
-        return new self($amount);
-    }
-
-    /**
-     * @param float|int|string $operand
-     * @throws \InvalidArgumentException If $operand is neither integer nor float
-     */
-    private function assertOperand($operand): void
-    {
-        if (!is_numeric($operand)) {
-            throw new \InvalidArgumentException(sprintf('Operand should be a numeric value, "%s" given.', gettype($operand)));
-        }
-    }
-
-    /**
-     * @param int $roundingMode
-     * @throws \InvalidArgumentException If $roundingMode is not valid
-     */
-    private function assertRoundingMode($roundingMode): void
-    {
-        if (!in_array(
-            $roundingMode, [
-                self::ROUND_HALF_DOWN, self::ROUND_HALF_EVEN, self::ROUND_HALF_ODD,
-                self::ROUND_HALF_UP, self::ROUND_UP, self::ROUND_DOWN,
-                self::ROUND_HALF_POSITIVE_INFINITY, self::ROUND_HALF_NEGATIVE_INFINITY,
-            ], true
-        )) {
-            throw new \InvalidArgumentException(
-                'Rounding mode should be Money::ROUND_HALF_DOWN | '.
-                'Money::ROUND_HALF_EVEN | Money::ROUND_HALF_ODD | '.
-                'Money::ROUND_HALF_UP | Money::ROUND_UP | Money::ROUND_DOWN'.
-                'Money::ROUND_HALF_POSITIVE_INFINITY | Money::ROUND_HALF_NEGATIVE_INFINITY'
-            );
-        }
-    }
-
-    /**
-     * @param float|int|string $multiplier
-     * @param int $roundingMode
-     * @return Money
-     */
-    public function multiply($multiplier, $roundingMode = self::ROUND_HALF_UP): Money
-    {
-        $this->assertOperand($multiplier);
-        $this->assertRoundingMode($roundingMode);
-
-        $product = $this->round($this->calculator->multiply($this->amount, $multiplier), $roundingMode);
-
-        return $this->newInstance($product);
+        return $first->add(...$collection)->divide(func_num_args());
     }
 
     /**
@@ -232,10 +172,10 @@ class Money implements \JsonSerializable
         $this->assertOperand($divisor);
         $this->assertRoundingMode($roundingMode);
 
-        $divisor = (string) Number::fromNumber($divisor);
+        $divisor = Number::fromNumber($divisor)->toString();
 
         if ($this->calculator->compare($divisor, '0') === 0) {
-            throw new \InvalidArgumentException('Division by zero');
+            throw new InvalidArgumentException('Division by zero');
         }
 
         $quotient = $this->round($this->calculator->divide($this->amount, $divisor), $roundingMode);
@@ -244,26 +184,45 @@ class Money implements \JsonSerializable
     }
 
     /**
-     * @param Money $divisor
-     * @return Money
+     * @param float|int|string $operand
+     * @throws InvalidArgumentException If $operand is neither integer nor float
      */
-    public function mod(Money $divisor): Money
+    private function assertOperand($operand): void
     {
-        return new self($this->calculator->mod($this->amount, $divisor->amount));
+        if (!is_numeric($operand)) {
+            throw new InvalidArgumentException(
+                sprintf('Operand should be a numeric value, "%s" given.', gettype($operand))
+            );
+        }
     }
 
-  
     /**
-     * @param Money $money
-     * @return string
+     * @param int $roundingMode
+     * @throws InvalidArgumentException If $roundingMode is not valid
      */
-    public function ratioOf(Money $money): string
+    private function assertRoundingMode($roundingMode): void
     {
-        if ($money->isZero()) {
-            throw new \InvalidArgumentException('Cannot calculate a ratio of zero');
+        if (!in_array(
+            $roundingMode,
+            [
+                self::ROUND_HALF_DOWN,
+                self::ROUND_HALF_EVEN,
+                self::ROUND_HALF_ODD,
+                self::ROUND_HALF_UP,
+                self::ROUND_UP,
+                self::ROUND_DOWN,
+                self::ROUND_HALF_POSITIVE_INFINITY,
+                self::ROUND_HALF_NEGATIVE_INFINITY,
+            ],
+            true
+        )) {
+            throw new InvalidArgumentException(
+                'Rounding mode should be Money::ROUND_HALF_DOWN | ' .
+                'Money::ROUND_HALF_EVEN | Money::ROUND_HALF_ODD | ' .
+                'Money::ROUND_HALF_UP | Money::ROUND_UP | Money::ROUND_DOWN' .
+                'Money::ROUND_HALF_POSITIVE_INFINITY | Money::ROUND_HALF_NEGATIVE_INFINITY'
+            );
         }
-
-        return $this->calculator->divide($this->amount, $money->amount);
     }
 
     /**
@@ -287,6 +246,80 @@ class Money implements \JsonSerializable
     }
 
     /**
+     * @param int|string $amount
+     * @return Money
+     */
+    private function newInstance($amount): Money
+    {
+        return new self($amount);
+    }
+
+    /**
+     * @param Money $other
+     * @return bool
+     */
+    public function equals(Money $other): bool
+    {
+        return $this->amount === $other->amount;
+    }
+
+    /**
+     * @param Money $other
+     * @return bool
+     */
+    public function greaterThanOrEqual(Money $other): bool
+    {
+        return $this->compare($other) >= 0;
+    }
+
+    /**
+     * @param Money $other
+     * @return bool
+     */
+    public function lessThanOrEqual(Money $other): bool
+    {
+        return $this->compare($other) <= 0;
+    }
+
+    /**
+     * @return int
+     */
+    public function getValue(): int
+    {
+        return (int)$this->amount;
+    }
+
+    /**
+     * @param Money $divisor
+     * @return Money
+     */
+    public function mod(Money $divisor): Money
+    {
+        return new self($this->calculator->mod($this->amount, $divisor->amount));
+    }
+
+    /**
+     * @param Money $money
+     * @return string
+     */
+    public function ratioOf(Money $money): string
+    {
+        if ($money->isZero()) {
+            throw new InvalidArgumentException('Cannot calculate a ratio of zero');
+        }
+
+        return $this->calculator->divide($this->amount, $money->amount);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isZero(): bool
+    {
+        return $this->calculator->compare($this->amount, '0') === 0;
+    }
+
+    /**
      * @return Money
      */
     public function absolute(): Money
@@ -303,13 +336,17 @@ class Money implements \JsonSerializable
     }
 
     /**
-     * Checks if the value represented by this object is zero.
-     *
-     * @return bool
+     * @param Money[] $subtrahends
+     * @return Money
      */
-    public function isZero(): bool
+    public function subtract(Money ...$subtrahends): Money
     {
-        return $this->calculator->compare($this->amount, '0') === 0;
+        $amount = $this->amount;
+        foreach ($subtrahends as $subtrahend) {
+            $amount = $this->calculator->subtract($amount, $subtrahend->amount);
+        }
+
+        return new self($amount);
     }
 
     /**
@@ -339,8 +376,21 @@ class Money implements \JsonSerializable
     {
         return [
             'amount' => $this->getAmount(),
-            'formatted' => $this->getFormatted()
+            'formatted' => $this->getFormatted(),
         ];
+    }
+
+    /**
+     * @return string
+     */
+    public function getAmount(): string
+    {
+        return $this->amount;
+    }
+
+    public function getFormatted(): string
+    {
+        return Formatter::format($this->amount);
     }
 
     /**
@@ -351,7 +401,7 @@ class Money implements \JsonSerializable
     public function tax($tax, $roundingMode = self::ROUND_HALF_UP): Money
     {
         if (!is_numeric($tax) || $tax === 0) {
-            throw new \InvalidArgumentException('Tax must be (non zero) numeric value');
+            throw new InvalidArgumentException('Tax must be (non zero) numeric value');
         }
 
         $taxValue = $tax / 100;
@@ -359,58 +409,17 @@ class Money implements \JsonSerializable
     }
 
     /**
-     * @param Money $first
-     * @param Money ...$collection
+     * @param float|int|string $multiplier
+     * @param int $roundingMode
      * @return Money
      */
-    public static function min(self $first, self ...$collection)
+    public function multiply($multiplier, $roundingMode = self::ROUND_HALF_UP): Money
     {
-        $min = $first;
+        $this->assertOperand($multiplier);
+        $this->assertRoundingMode($roundingMode);
 
-        foreach ($collection as $money) {
-            if ($money->lessThan($min)) {
-                $min = $money;
-            }
-        }
+        $product = $this->round($this->calculator->multiply($this->amount, $multiplier), $roundingMode);
 
-        return $min;
-    }
-
-    /**
-     * @param Money $first
-     * @param Money ...$collection
-     * @return Money
-     */
-    public static function max(self $first, self ...$collection)
-    {
-        $max = $first;
-
-        foreach ($collection as $money) {
-            if ($money->greaterThan($max)) {
-                $max = $money;
-            }
-        }
-
-        return $max;
-    }
-
-    /**
-     * @param Money $first
-     * @param Money ...$collection
-     * @return Money
-     */
-    public static function sum(self $first, self ...$collection)
-    {
-        return $first->add(...$collection);
-    }
-
-    /**
-     * @param Money $first
-     * @param Money ...$collection
-     * @return Money
-     */
-    public static function avg(self $first, self ...$collection)
-    {
-        return $first->add(...$collection)->divide(func_num_args());
+        return $this->newInstance($product);
     }
 }

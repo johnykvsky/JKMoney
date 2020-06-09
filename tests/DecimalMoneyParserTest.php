@@ -2,7 +2,6 @@
 
 use JKMoney\Parser;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 
 final class DecimalMoneyParserTest extends TestCase
 {

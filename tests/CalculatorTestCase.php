@@ -8,7 +8,7 @@ abstract class CalculatorTestCase extends TestCase
     use RoundExamples;
 
     /**
-     * @return Calculator
+     * @return BcMathCalculator
      */
     abstract protected function getCalculator();
 
@@ -36,7 +36,9 @@ abstract class CalculatorTestCase extends TestCase
      */
     public function it_multiplies_a_value_by_another($value1, $value2, $expected)
     {
-        $this->assertEquals($expected, $this->getCalculator()->multiply($value1, $value2));
+        $this->assertEquals($expected,
+            //fix for bcmul PHP 7.3 vs later versions
+            str_pad(rtrim($this->getCalculator()->multiply($value1, $value2)), 8, '0', STR_PAD_RIGHT));
     }
 
     /**
@@ -145,15 +147,15 @@ abstract class CalculatorTestCase extends TestCase
     public function multiplicationExamples()
     {
         return [
-            [1, 1.5, '1.5'],
-            [10, 1.2500, '12.50'],
-            [100, 0.29, '29.00'],
-            [100, 0.029, '2.900'],
-            [100, 0.0029, '0.2900'],
-            [1000, 0.29, '290.00'],
-            [1000, 0.029, '29.000'],
-            [1000, 0.0029, '2.9000'],
-            [2000, 0.0029, '5.8000'],
+            [1, 1.5, '1.500000'],
+            [10, 1.2500, '12.50000'],
+            [100, 0.29, '29.00000'],
+            [100, 0.029, '2.900000'],
+            [100, 0.0029, '0.290000'],
+            [1000, 0.29, '290.0000'],
+            [1000, 0.029, '29.00000'],
+            [1000, 0.0029, '2.900000'],
+            [2000, 0.0029, '5.800000'],
             ['1', 0.006597, '0.006597'],
         ];
     }
