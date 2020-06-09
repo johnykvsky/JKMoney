@@ -38,7 +38,7 @@ abstract class CalculatorTestCase extends TestCase
     {
         $this->assertEquals($expected,
             //fix for bcmul PHP 7.3 vs later versions
-            str_pad(rtrim($this->getCalculator()->multiply($value1, $value2)), 8, '0', STR_PAD_RIGHT));
+            str_pad(rtrim($this->getCalculator()->multiply($value1, $value2), '0'), 8, '0', STR_PAD_RIGHT));
     }
 
     /**
