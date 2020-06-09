@@ -158,12 +158,12 @@ final class MoneyTest extends TestCase
     public function it_converts_to_json()
     {
         $this->assertEquals(
-            '{"amount":"350"}',
+            '{"amount":"350","formatted":"3.50"}',
             json_encode(Money::create(350))
         );
 
         $this->assertEquals(
-            ['amount' => '350'],
+            ['amount' => '350','formatted' => '3.50'],
             Money::create(350)->jsonSerialize()
         );
     }
@@ -206,6 +206,15 @@ final class MoneyTest extends TestCase
         $six = new Money(6);
 
         $six->ratioOf($zero);
+    }
+
+    /**
+     * @test
+     */
+    public function it_calculate_tax()
+    {
+        $base = new Money(10000);
+        $this->assertEquals(2300, $base->tax(23)->getValue());
     }
 
     public function equalityExamples()

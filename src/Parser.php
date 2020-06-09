@@ -14,7 +14,7 @@ class Parser
     public static function parse(string $money): string
     {
         if (!is_string($money)) {
-            throw new \Exception('Formatted raw money should be string, e.g. 1.00');
+            throw new \InvalidArgumentException('Formatted raw money should be string, e.g. 1.00');
         }
 
         $decimal = trim($money);
@@ -24,7 +24,7 @@ class Parser
         }
 
         if (!preg_match(self::DECIMAL_PATTERN, $decimal, $matches) || !isset($matches['digits'])) {
-            throw new \Exception(sprintf(
+            throw new \InvalidArgumentException(sprintf(
                 'Cannot parse "%s" to Money.',
                 $decimal
             ));

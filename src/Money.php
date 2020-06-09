@@ -29,7 +29,7 @@ class Money implements \JsonSerializable
     public function __construct($amount)
     {
         if (filter_var($amount, FILTER_VALIDATE_INT) === false) {
-            $numberFromString = Number::fromString($amount);
+            $numberFromString = Number::fromString((string) $amount);
             if (!$numberFromString->isInteger()) {
                 throw new \InvalidArgumentException('Amount must be an integer(ish) value');
             }
@@ -52,7 +52,7 @@ class Money implements \JsonSerializable
         }
 
         if (is_float($number) || is_string($number)) {
-             return new self((string) Parser::parse($number));
+             return new self((string) Parser::parse((string) $number));
         } 
 
         throw new \InvalidArgumentException('Invalid amount type provided');
@@ -99,7 +99,7 @@ class Money implements \JsonSerializable
     }
 
     /**
-     * @param \Money\Money $other
+     * @param Money $other
      * @return bool
      */
     public function greaterThanOrEqual(Money $other): bool
@@ -117,7 +117,7 @@ class Money implements \JsonSerializable
     }
 
     /**
-     * @param \Money\Money $other
+     * @param Money $other
      * @return bool
      */
     public function lessThanOrEqual(Money $other): bool
@@ -178,13 +178,10 @@ class Money implements \JsonSerializable
      * @param float|int|string $operand
      * @throws \InvalidArgumentException If $operand is neither integer nor float
      */
-    private function assertOperand($operand)
+    private function assertOperand($operand): void
     {
         if (!is_numeric($operand)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Operand should be a numeric value, "%s" given.',
-                is_object($operand) ? get_class($operand) : gettype($operand)
-            ));
+            throw new \InvalidArgumentException(sprintf('Operand should be a numeric value, "%s" given.', gettype($operand)));
         }
     }
 
@@ -192,7 +189,7 @@ class Money implements \JsonSerializable
      * @param int $roundingMode
      * @throws \InvalidArgumentException If $roundingMode is not valid
      */
-    private function assertRoundingMode($roundingMode)
+    private function assertRoundingMode($roundingMode): void
     {
         if (!in_array(
             $roundingMode, [
@@ -312,7 +309,7 @@ class Money implements \JsonSerializable
      */
     public function isZero(): bool
     {
-        return $this->calculator->compare($this->amount, 0) === 0;
+        return $this->calculator->compare($this->amount, '0') === 0;
     }
 
     /**
@@ -322,7 +319,7 @@ class Money implements \JsonSerializable
      */
     public function isPositive(): bool
     {
-        return $this->calculator->compare($this->amount, 0) > 0;
+        return $this->calculator->compare($this->amount, '0') > 0;
     }
 
     /**
@@ -332,7 +329,7 @@ class Money implements \JsonSerializable
      */
     public function isNegative(): bool
     {
-        return $this->calculator->compare($this->amount, 0) < 0;
+        return $this->calculator->compare($this->amount, '0') < 0;
     }
 
     /**

@@ -4,7 +4,7 @@ namespace JKMoney;
 
 class BcMathCalculator
 {
-    /** @var string */
+    /** @var int */
     private $scale;
 
     /** 
@@ -200,7 +200,7 @@ class BcMathCalculator
     }
 
     /**
-     * @param $number
+     * @param Number $number
      * @return string
      */
     private function roundDigit(Number $number)
@@ -218,7 +218,7 @@ class BcMathCalculator
 
     /**
      * @param string $amount
-     * @param int|float|string $divisor
+     * @param string $divisor
      * @return string
      */
     public function mod($amount, $divisor): string

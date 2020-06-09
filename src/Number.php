@@ -10,7 +10,7 @@ class Number
     /** @var string */
     private $fractionalPart;
 
-    /** @var array */
+    /** @var int[] */
     private static $numbers = [0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 1, 7 => 1, 8 => 1, 9 => 1];
 
     /**
@@ -28,11 +28,15 @@ class Number
     }
 
     /**
-     * @param $number
+     * @param string $number
      * @return self
      */
-    public static function fromString($number): self
+    public static function fromString(string $number): self
     {
+        if (!is_string($number)) {
+            throw new \InvalidArgumentException('Integer value expected');
+        }
+
         $decimalSeparatorPosition = strpos($number, '.');
         if ($decimalSeparatorPosition === false) {
             return new self($number, '');
@@ -48,13 +52,13 @@ class Number
      * @param int $number
      * @return self
      */
-    public static function fromInt($number): self
+    public static function fromInt(int $number): self
     {
-        if (is_int($number) === false) {
+        if (!is_int($number)) {
             throw new \InvalidArgumentException('Integer value expected');
         }
 
-        return new self($number);
+        return new self((string) $number);
     }
 
     /**
@@ -63,7 +67,7 @@ class Number
      */
     public static function fromFloat($number): self
     {
-        if (is_float($number) === false) {
+        if (!is_float($number)) {
             throw new \InvalidArgumentException('Floating point value expected');
         }
 
@@ -81,7 +85,7 @@ class Number
         }
 
         if (is_int($number)) {
-            return new self($number);
+            return new self((string) $number);
         }
 
         if (is_string($number)) {
