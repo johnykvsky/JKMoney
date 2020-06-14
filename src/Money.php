@@ -31,6 +31,16 @@ class Money implements JsonSerializable
      */
     public function __construct($amount)
     {
+        $this->amount = self::prepareAmount($amount);
+        $this->calculator = new BcMathCalculator;
+    }
+
+    /**
+     * @param int|float|string $amount
+     * @return string
+     */
+    private static function prepareAmount($amount): string
+    {
         if (filter_var($amount, FILTER_VALIDATE_INT) === false) {
             $numberFromString = Number::fromString((string)$amount);
             if (!$numberFromString->isInteger()) {
@@ -40,8 +50,7 @@ class Money implements JsonSerializable
             $amount = $numberFromString->getIntegerPart();
         }
 
-        $this->amount = (string)$amount;
-        $this->calculator = new BcMathCalculator;
+        return (string)$amount;
     }
 
     /**
@@ -59,6 +68,20 @@ class Money implements JsonSerializable
         }
 
         throw new InvalidArgumentException('Invalid amount type provided');
+    }
+
+    /**
+     * @param int|float|string $amount
+     * @return bool
+     */
+    public static function isValid($amount): bool
+    {
+        try {
+            self::create($amount);
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**

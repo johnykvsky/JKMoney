@@ -24,6 +24,18 @@ final class MoneyTest extends TestCase
     }
 
     /**
+     * @test
+     */
+    public function it_validate_input_numbers()
+    {
+        $this->assertEquals(true, Money::isValid('10.0'));
+        $this->assertEquals(false, Money::isValid('1 0.0'));
+        $this->assertEquals(false, Money::isValid('1 000.00'));
+        $this->assertEquals(false, Money::isValid('1,000.00'));
+        $this->assertEquals(false, Money::isValid('10,0'));
+    }
+
+    /**
      * @dataProvider comparisonExamples
      * @test
      */

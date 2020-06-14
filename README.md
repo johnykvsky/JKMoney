@@ -27,8 +27,10 @@ $ composer require johnykvsky/jkmoney
 ## Usage
 
 Please, look at https://github.com/moneyphp/money for more details - just keep in mind: no currency, only decimal format.
-Remember: Money class is immutable.
-Remember: if you create it from integer, you need to pass value in smallest currency items (ie. cents). 
+
+ - Remember: Money class is immutable.
+ - Remember: If you create it from integer, you need to pass value in smallest currency items (ie. cents). 
+ - Remember: Input can contain only digits and optional dot. No commas, no spaces, no other symbols.
 
 ``` php
 use JKMoney\Money;
@@ -47,6 +49,11 @@ echo $result->getFormatted(); // for display '360.35', to use in Twig like {{ mo
 //calculate tax, 23%
 echo $result->tax(23)->getValue(); // amount 82.88
 echo $result->getValue(); // amount is still 360.35, since Money is immutable
+//validate input
+$valid = Money::isValid('10.0'); // true
+$valid = Money::isValid('10,0'); // false
+$valid = Money::isValid('1 500'); // false
+$valid = Money::isValid('1,000.0'); // false
 ```
 
 ## Testing
