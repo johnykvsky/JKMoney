@@ -17,7 +17,7 @@
         }
     ],
     "require": {
-        "php": "^7.2",
+        "php": "^7.7",
         "ext-json": "*",
         "ext-bcmath": "*"
     },
