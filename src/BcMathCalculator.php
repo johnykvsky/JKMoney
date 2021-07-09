@@ -26,7 +26,7 @@ class BcMathCalculator
         return Number::fromString(\bcadd($amount, $addend, self::SCALE))->toString();
     }
 
-    function subtract(string $amount, string $subtrahend): string
+    public static function subtract(string $amount, string $subtrahend): string
     {
         return Number::fromString(\bcsub($amount, $subtrahend, self::SCALE))->toString();
     }
