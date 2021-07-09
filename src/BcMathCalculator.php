@@ -4,77 +4,47 @@ namespace JKMoney;
 
 use InvalidArgumentException;
 
+use function bcadd;
+use function bccomp;
+use function bcdiv;
+use function bcmod;
+use function bcmul;
+use function bcsub;
+use function ltrim;
+
 class BcMathCalculator
 {
-    /** @var int */
-    private $scale;
+    private const SCALE = 14;
 
-    /**
-     * @param int $scale
-     */
-    public function __construct($scale = 14)
+    public static function compare(string $a, string $b): int
     {
-        $this->scale = $scale;
+        return bccomp($a, $b, self::SCALE);
     }
 
-    /**
-     * @param string $a
-     * @param string $b
-     * @return int
-     */
-    public function compare(string $a, string $b): int
+    public static function add(string $amount, string $addend): string
     {
-        return bccomp($a, $b, $this->scale);
+        return Number::fromString(\bcadd($amount, $addend, self::SCALE))->toString();
     }
 
-    /**
-     * @param string $amount
-     * @param string $addend
-     * @return string
-     */
-    public function add(string $amount, string $addend): string
+    function subtract(string $amount, string $subtrahend): string
     {
-        return Number::fromString(bcadd($amount, $addend, $this->scale))->toString();
+        return Number::fromString(\bcsub($amount, $subtrahend, self::SCALE))->toString();
     }
 
-    /**
-     * @param string $amount
-     * @param string $subtrahend
-     * @return string
-     */
-    public function subtract(string $amount, string $subtrahend): string
-    {
-        return Number::fromString(bcsub($amount, $subtrahend, $this->scale))->toString();
-    }
-
-    /**
-     * @param string $amount
-     * @param int|float|string $multiplierNumber
-     * @return string
-     */
-    public function multiply(string $amount, $multiplierNumber): string
+    public static function multiply(string $amount, $multiplierNumber): string
     {
         $multiplier = Number::fromNumber($multiplierNumber);
-        return bcmul($amount, $multiplier->toString(), $this->scale);
+        return bcmul($amount, $multiplier->toString(), self::SCALE);
     }
 
-    /**
-     * @param string $amount
-     * @param int|float|string $divisorNumber
-     * @return string|null
-     */
-    public function divide(string $amount, $divisorNumber): ?string
+    public static function divide(string $amount, $divisorNumber): ?string
     {
         $divisor = Number::fromNumber($divisorNumber);
 
-        return bcdiv($amount, $divisor->toString(), $this->scale);
+        return bcdiv($amount, $divisor->toString(), self::SCALE);
     }
 
-    /**
-     * @param string $amount
-     * @return string
-     */
-    public function ceil(string $amount): string
+    public static function ceil(string $amount): string
     {
         $number = Number::fromNumber($amount);
 
@@ -89,11 +59,7 @@ class BcMathCalculator
         return bcadd($number->toString(), '1', 0);
     }
 
-    /**
-     * @param string $amount
-     * @return string
-     */
-    public function floor(string $amount): string
+    public static function floor(string $amount): string
     {
         $number = Number::fromNumber($amount);
 
@@ -108,21 +74,12 @@ class BcMathCalculator
         return bcadd($number, '0', 0);
     }
 
-    /**
-     * @param string $number
-     * @return string
-     */
-    public function absolute(string $number): string
+    public static function absolute(string $number): string
     {
         return ltrim($number, '-');
     }
 
-    /**
-     * @param int|float|string $amount
-     * @param int $roundingMode
-     * @return string
-     */
-    public function round(string $amount, int $roundingMode): string
+    public static function round(string $amount, int $roundingMode): string
     {
         $number = Number::fromNumber($amount);
 
@@ -131,7 +88,7 @@ class BcMathCalculator
         }
 
         if ($number->isHalf() === false) {
-            return $this->roundDigit($number);
+            return self::roundDigit($number);
         }
 
         if (Money::ROUND_HALF_UP === $roundingMode) {
@@ -201,11 +158,7 @@ class BcMathCalculator
         throw new InvalidArgumentException('Unknown rounding mode');
     }
 
-    /**
-     * @param Number $number
-     * @return string
-     */
-    private function roundDigit(Number $number): string
+    private static function roundDigit(Number $number): string
     {
         if ($number->isCloserToNext()) {
             return bcadd(
@@ -218,12 +171,7 @@ class BcMathCalculator
         return bcadd($number->toString(), '0', 0);
     }
 
-    /**
-     * @param string $amount
-     * @param string $divisor
-     * @return string|null
-     */
-    public function mod(string $amount, string $divisor): ?string
+    public static function mod(string $amount, string $divisor): ?string
     {
         return bcmod($amount, $divisor);
     }

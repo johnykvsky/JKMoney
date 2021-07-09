@@ -2,18 +2,19 @@
 
 namespace JKMoney;
 
+use function assert;
+use function str_pad;
+use function strlen;
+use function substr;
+
 class Formatter
 {
-    /**
-     * @param string $valueBase
-     * @return string
-     */
-    public static function format(string $valueBase): string
+    public static function format(Money $money): string
     {
-        $negative = false;
+        $valueBase = $money->getAmount();
+        $negative = $valueBase[0] === '-';
 
-        if (strpos($valueBase, '-') === 0) {
-            $negative = true;
+        if ($negative) {
             $valueBase = substr($valueBase, 1);
         }
 
@@ -23,16 +24,18 @@ class Formatter
             $formatted = substr($valueBase, 0, $valueLength - Money::DECIMAL_DIGITS);
             $decimalDigits = substr($valueBase, $valueLength - Money::DECIMAL_DIGITS);
 
-            if ($decimalDigits && $decimalDigits !== '') {
+            if (strlen($decimalDigits) > 0) {
                 $formatted .= '.' . $decimalDigits;
             }
         } else {
             $formatted = '0.' . str_pad('', Money::DECIMAL_DIGITS - $valueLength, '0') . $valueBase;
         }
 
-        if ($negative === true) {
-            $formatted = '-' . $formatted;
+        if ($negative) {
+            return '-' . $formatted;
         }
+
+        assert($formatted !== '');
 
         return $formatted;
     }

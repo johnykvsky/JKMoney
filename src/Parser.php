@@ -4,25 +4,25 @@ namespace JKMoney;
 
 use InvalidArgumentException;
 
+use function ltrim;
+use function preg_match;
+use function sprintf;
+use function str_pad;
+use function strlen;
+use function substr;
+use function trim;
+
 class Parser
 {
     /** @const string */
-    const DECIMAL_PATTERN = '/^(?P<sign>-)?(?P<digits>0|[1-9]\d*)?\.?(?P<fraction>\d+)?$/';
+    public const DECIMAL_PATTERN = '/^(?P<sign>-)?(?P<digits>0|[1-9]\d*)?\.?(?P<fraction>\d+)?$/';
 
-    /**
-     * @param string $money
-     * @return string
-     */
-    public static function parse(string $money): string
+    public static function parse(string $money): Money
     {
-        if (!is_string($money)) {
-            throw new InvalidArgumentException('Formatted raw money should be string, e.g. 1.00');
-        }
-
         $decimal = trim($money);
 
         if ($decimal === '') {
-            return '0';
+            return new Money(0);
         }
 
         if (!preg_match(self::DECIMAL_PATTERN, $decimal, $matches) || !isset($matches['digits'])) {
@@ -66,6 +66,6 @@ class Parser
             $decimal = '0';
         }
 
-        return $decimal;
+        return new Money($decimal);
     }
 }

@@ -13,7 +13,7 @@ final class DecimalMoneyFormatterTest extends TestCase
     public function it_formats_money($amount, $result)
     {
         $money = new Money($amount);
-        $this->assertSame($result, Formatter::format($money->getAmount()));
+        $this->assertSame($result, Formatter::format($money));
     }
 
     public static function moneyExamples()

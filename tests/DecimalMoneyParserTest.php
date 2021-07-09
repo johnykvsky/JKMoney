@@ -11,7 +11,7 @@ final class DecimalMoneyParserTest extends TestCase
      */
     public function it_parses_money($decimal, $result)
     {
-        $this->assertEquals($result, (int) Parser::parse($decimal));
+        $this->assertEquals($result, (int) Parser::parse($decimal)->getAmount());
     }
 
     /**

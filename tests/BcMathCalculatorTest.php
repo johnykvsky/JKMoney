@@ -9,11 +9,6 @@ class BcMathCalculatorTest extends CalculatorTestCase
 {
     private $defaultScale;
 
-    protected function getCalculator()
-    {
-        return new BcMathCalculator();
-    }
-
     public function setUp(): void
     {
         $this->defaultScale = ini_get('bcmath.scale');
@@ -32,7 +27,7 @@ class BcMathCalculatorTest extends CalculatorTestCase
     {
         bcscale(1);
 
-        $this->assertEquals($expected, $this->getCalculator()->add($value1, $value2));
+        $this->assertEquals($expected, BcMathCalculator::add($value1, $value2));
     }
 
     /**
@@ -43,7 +38,7 @@ class BcMathCalculatorTest extends CalculatorTestCase
     {
         bcscale(1);
 
-        $this->assertEquals($expected, $this->getCalculator()->subtract($value1, $value2));
+        $this->assertEquals($expected, BcMathCalculator::subtract($value1, $value2));
     }
 
     /**
@@ -51,8 +46,8 @@ class BcMathCalculatorTest extends CalculatorTestCase
      */
     public function it_compares_numbers_close_to_zero()
     {
-        $this->assertEquals(1, $this->getCalculator()->compare('1', '0.0005'));
-        $this->assertEquals(1, $this->getCalculator()->compare('1', '0.000000000000000000000000005'));
+        $this->assertEquals(1, BcMathCalculator::compare('1', '0.0005'));
+        $this->assertEquals(1, BcMathCalculator::compare('1', '0.000000000000000000000000005'));
     }
 
     /**
@@ -60,7 +55,7 @@ class BcMathCalculatorTest extends CalculatorTestCase
      */
     public function it_uses_scale_for_add()
     {
-        $this->assertEquals('0.00130154', $this->getCalculator()->add('0.00125148', '0.00005006'));
+        $this->assertEquals('0.00130154', BcMathCalculator::add('0.00125148', '0.00005006'));
     }
 
     /**
@@ -68,6 +63,6 @@ class BcMathCalculatorTest extends CalculatorTestCase
      */
     public function it_uses_scale_for_subtract()
     {
-        $this->assertEquals('0.00120142', $this->getCalculator()->subtract('0.00125148', '0.00005006'));
+        $this->assertEquals('0.00120142', BcMathCalculator::subtract('0.00125148', '0.00005006'));
     }
 }

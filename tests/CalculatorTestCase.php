@@ -8,17 +8,12 @@ abstract class CalculatorTestCase extends TestCase
     use RoundExamples;
 
     /**
-     * @return BcMathCalculator
-     */
-    abstract protected function getCalculator();
-
-    /**
      * @dataProvider additionExamples
      * @test
      */
     public function it_adds_two_values($value1, $value2, $expected)
     {
-        $this->assertEquals($expected, $this->getCalculator()->add($value1, $value2));
+        $this->assertEquals($expected, BcMathCalculator::add($value1, $value2));
     }
 
     /**
@@ -27,7 +22,7 @@ abstract class CalculatorTestCase extends TestCase
      */
     public function it_subtracts_a_value_from_another($value1, $value2, $expected)
     {
-        $this->assertEquals($expected, $this->getCalculator()->subtract($value1, $value2));
+        $this->assertEquals($expected, BcMathCalculator::subtract($value1, $value2));
     }
 
     /**
@@ -38,7 +33,7 @@ abstract class CalculatorTestCase extends TestCase
     {
         $this->assertEquals($expected,
             //fix for bcmul PHP 7.3 vs later versions
-            str_pad(rtrim($this->getCalculator()->multiply($value1, $value2), '0'), 8, '0', STR_PAD_RIGHT));
+            str_pad(rtrim(BcMathCalculator::multiply($value1, $value2), '0'), 8, '0', STR_PAD_RIGHT));
     }
 
     /**
@@ -47,7 +42,7 @@ abstract class CalculatorTestCase extends TestCase
      */
     public function it_divides_a_value_by_another($value1, $value2, $expected)
     {
-        $result = $this->getCalculator()->divide($value1, $value2);
+        $result = BcMathCalculator::divide($value1, $value2);
         $this->assertEquals(substr($expected, 0, 12), substr($result, 0, 12));
     }
 
@@ -57,7 +52,7 @@ abstract class CalculatorTestCase extends TestCase
      */
     public function it_divides_a_value_by_another_exact($value1, $value2, $expected)
     {
-        $this->assertEquals($expected, $this->getCalculator()->divide($value1, $value2));
+        $this->assertEquals($expected, BcMathCalculator::divide($value1, $value2));
     }
 
     /**
@@ -66,7 +61,7 @@ abstract class CalculatorTestCase extends TestCase
      */
     public function it_ceils_a_value($value, $expected)
     {
-        $this->assertEquals($expected, $this->getCalculator()->ceil($value));
+        $this->assertEquals($expected, BcMathCalculator::ceil($value));
     }
 
     /**
@@ -75,7 +70,7 @@ abstract class CalculatorTestCase extends TestCase
      */
     public function it_floors_a_value($value, $expected)
     {
-        $this->assertEquals($expected, $this->getCalculator()->floor($value));
+        $this->assertEquals($expected, BcMathCalculator::floor($value));
     }
 
     /**
@@ -84,7 +79,7 @@ abstract class CalculatorTestCase extends TestCase
      */
     public function it_calculates_the_absolute_value($value, $expected)
     {
-        $this->assertEquals($expected, $this->getCalculator()->absolute($value));
+        $this->assertEquals($expected, BcMathCalculator::absolute($value));
     }
 
     /**
@@ -93,7 +88,7 @@ abstract class CalculatorTestCase extends TestCase
      */
     public function it_rounds_a_value($value, $mode, $expected)
     {
-        $this->assertEquals($expected, $this->getCalculator()->round($value, $mode));
+        $this->assertEquals($expected, BcMathCalculator::round($value, $mode));
     }
 
     /**
@@ -104,8 +99,8 @@ abstract class CalculatorTestCase extends TestCase
     {
         // Compare with both orders. One must return a value less than zero,
         // the other must return a value greater than zero.
-        $this->assertLessThan(0, $this->getCalculator()->compare($left, $right));
-        $this->assertGreaterThan(0, $this->getCalculator()->compare($right, $left));
+        $this->assertLessThan(0, BcMathCalculator::compare($left, $right));
+        $this->assertGreaterThan(0, BcMathCalculator::compare($right, $left));
     }
 
     /**
@@ -115,8 +110,8 @@ abstract class CalculatorTestCase extends TestCase
     public function it_compares_values($left, $right)
     {
         // Compare with both orders, both must return zero.
-        $this->assertEquals(0, $this->getCalculator()->compare($left, $right));
-        $this->assertEquals(0, $this->getCalculator()->compare($right, $left));
+        $this->assertEquals(0, BcMathCalculator::compare($left, $right));
+        $this->assertEquals(0, BcMathCalculator::compare($right, $left));
     }
 
     /**
@@ -125,7 +120,7 @@ abstract class CalculatorTestCase extends TestCase
      */
     public function it_calculates_the_modulus_of_a_value($left, $right, $expected)
     {
-        $this->assertEquals($expected, $this->getCalculator()->mod($left, $right));
+        $this->assertEquals($expected, BcMathCalculator::mod($left, $right));
     }
 
     public function additionExamples()

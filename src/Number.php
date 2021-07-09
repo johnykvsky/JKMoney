@@ -4,35 +4,35 @@ namespace JKMoney;
 
 use InvalidArgumentException;
 
+use function abs;
+use function explode;
+use function is_int;
+use function ltrim;
+use function min;
+use function rtrim;
+use function sprintf;
+use function str_pad;
+use function strlen;
+use function substr;
+
 class Number
 {
     /** @var int[] */
-    private static $numbers = [0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 1, 7 => 1, 8 => 1, 9 => 1];
-    /** @var string */
-    private $integerPart;
-    /** @var string */
-    private $fractionalPart;
+    private const NUMBERS = [0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 1, 7 => 1, 8 => 1, 9 => 1];
+    private string $integerPart;
+    private string $fractionalPart;
 
-    /**
-     * @param string $integerPart
-     * @param string $fractionalPart
-     */
     public function __construct(string $integerPart, string $fractionalPart = '')
     {
         if ('' === $integerPart && '' === $fractionalPart) {
             throw new InvalidArgumentException('Empty number is invalid');
         }
 
-        $this->integerPart = $this->parseIntegerPart($integerPart);
-        $this->fractionalPart = $this->parseFractionalPart($fractionalPart);
+        $this->integerPart = self::parseIntegerPart($integerPart);
+        $this->fractionalPart = self::parseFractionalPart($fractionalPart);
     }
 
-    /**
-     * @param string $number
-     *
-     * @return string
-     */
-    private function parseIntegerPart(string $number): string
+    private static function parseIntegerPart(string $number): string
     {
         if ('' === $number || '0' === $number) {
             return '0';
@@ -42,12 +42,18 @@ class Number
             return '-0';
         }
 
+        // Happy path performance optimization: number can be used as-is if it is within
+        // the platform's integer capabilities.
+        if ($number === (string) (int) $number) {
+            return $number;
+        }
+
         $nonZero = false;
 
         for ($position = 0, $characters = strlen($number); $position < $characters; ++$position) {
             $digit = $number[$position];
 
-            if (!isset(static::$numbers[$digit]) && !(0 === $position && '-' === $digit)) {
+            if (!isset(self::NUMBERS[$digit]) && !(0 === $position && '-' === $digit)) {
                 throw new InvalidArgumentException(
                     sprintf('Invalid integer part %1$s. Invalid digit %2$s found', $number, $digit)
                 );
@@ -65,19 +71,23 @@ class Number
         return $number;
     }
 
-    /**
-     * @param string $number
-     * @return string
-     */
-    private function parseFractionalPart(string $number): string
+    private static function parseFractionalPart(string $number): string
     {
         if ('' === $number) {
             return $number;
         }
 
+        $intFraction = (int) $number;
+
+        // Happy path performance optimization: number can be used as-is if it is within
+        // the platform's integer capabilities, and it starts with zeroes only.
+        if ($intFraction > 0 && ltrim($number, '0') === (string) $intFraction) {
+            return $number;
+        }
+
         for ($position = 0, $characters = strlen($number); $position < $characters; ++$position) {
             $digit = $number[$position];
-            if (!isset(static::$numbers[$digit])) {
+            if (!isset(self::NUMBERS[$digit])) {
                 throw new InvalidArgumentException(
                     sprintf('Invalid fractional part %1$s. Invalid digit %2$s found', $number, $digit)
                 );
@@ -87,28 +97,16 @@ class Number
         return $number;
     }
 
-    /**
-     * @param int $number
-     * @return self
-     */
     public static function fromInt(int $number): self
     {
         return new self((string)$number);
     }
 
-    /**
-     * @param float $number
-     * @return self
-     */
     public static function fromFloat(float $number): self
     {
         return self::fromString(sprintf('%.14F', $number));
     }
 
-    /**
-     * @param string $number
-     * @return self
-     */
     public static function fromString(string $number): self
     {
         $decimalSeparatorPosition = strpos($number, '.');
@@ -122,10 +120,6 @@ class Number
         );
     }
 
-    /**
-     * @param float|int|string $number
-     * @return self
-     */
     public static function fromNumber($number): self
     {
         if (is_float($number)) {
@@ -143,13 +137,6 @@ class Number
         throw new InvalidArgumentException('Valid numeric value expected');
     }
 
-    /**
-     * @param string $moneyValue
-     * @param int $targetDigits
-     * @param int $havingDigits
-     *
-     * @return string
-     */
     public static function roundMoneyValue(string $moneyValue, int $targetDigits, int $havingDigits): string
     {
         $valueLength = strlen($moneyValue);
@@ -185,33 +172,21 @@ class Number
         return $moneyValue;
     }
 
-    /**
-     * @return bool
-     */
     public function isDecimal(): bool
     {
         return $this->fractionalPart !== '';
     }
 
-    /**
-     * @return bool
-     */
     public function isInteger(): bool
     {
         return $this->fractionalPart === '';
     }
 
-    /**
-     * @return bool
-     */
     public function isHalf(): bool
     {
         return $this->fractionalPart === '5';
     }
 
-    /**
-     * @return bool
-     */
     public function isCurrentEven(): bool
     {
         $lastIntegerPartNumber = $this->integerPart[strlen($this->integerPart) - 1];
@@ -219,9 +194,6 @@ class Number
         return $lastIntegerPartNumber % 2 === 0;
     }
 
-    /**
-     * @return bool
-     */
     public function isCloserToNext(): bool
     {
         if ($this->fractionalPart === '') {
@@ -231,17 +203,11 @@ class Number
         return $this->fractionalPart[0] >= 5;
     }
 
-    /**
-     * @return string
-     */
     public function __toString()
     {
         return $this->toString();
     }
 
-    /**
-     * @return string
-     */
     public function toString(): string
     {
         if ($this->fractionalPart === '') {
@@ -251,33 +217,21 @@ class Number
         return $this->integerPart . '.' . $this->fractionalPart;
     }
 
-    /**
-     * @return bool
-     */
     public function isNegative(): bool
     {
         return strpos($this->integerPart, '-') === 0;
     }
 
-    /**
-     * @return string
-     */
     public function getIntegerPart(): string
     {
         return $this->integerPart;
     }
 
-    /**
-     * @return string
-     */
     public function getFractionalPart(): string
     {
         return $this->fractionalPart;
     }
 
-    /**
-     * @return string
-     */
     public function getIntegerRoundingMultiplier(): string
     {
         if (strpos($this->integerPart, '-') === 0) {
