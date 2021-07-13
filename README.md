@@ -82,17 +82,11 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 
 [ico-version]: https://img.shields.io/packagist/v/johnykvsky/JKMoney.svg?style=flat-square
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
-[ico-travis]: https://img.shields.io/travis/johnykvsky/JKMoney/master.svg?style=flat-square
-[ico-scrutinizer]: https://img.shields.io/scrutinizer/coverage/g/johnykvsky/JKMoney.svg?style=flat-square
-[ico-code-quality]: https://img.shields.io/scrutinizer/g/johnykvsky/JKMoney.svg?style=flat-square
 [ico-downloads]: https://img.shields.io/packagist/dt/johnykvsky/JKMoney.svg?style=flat-square
 [ico-github-actions]: https://github.com/johnykvsky/JKMoney/actions/workflows/php.yml/badge.svg
 
 [link-packagist]: https://packagist.org/packages/johnykvsky/JKMoney
-[link-travis]: https://travis-ci.org/johnykvsky/JKMoney
 [link-github-actions]: https://github.com/johnykvsky/JKMoney/actions
-[link-scrutinizer]: https://scrutinizer-ci.com/g/johnykvsky/JKMoney/code-structure
-[link-code-quality]: https://scrutinizer-ci.com/g/johnykvsky/JKMoney
 [link-downloads]: https://packagist.org/packages/johnykvsky/JKMoney
 [link-author]: https://github.com/johnykvsky
 [link-moneyphp]: http://moneyphp.org
